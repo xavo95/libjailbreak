@@ -10,6 +10,7 @@
 #define JAILBREAKD_COMMAND_ENTITLE_AND_SIGCONT 2
 #define JAILBREAKD_COMMAND_ENTITLE_AND_SIGCONT_FROM_XPCPROXY 3
 #define JAILBREAKD_COMMAND_FIXUP_SETUID 4
+#define JAILBREAKD_COMMAND_KEXECUTE 5
 
 static bool dosuid=false;
 
@@ -41,8 +42,20 @@ void jb_disconnect(jb_connection_t connection) {
 /* Entitle a process with the given flags (blocking, requires connection) */
 int jb_entitle_now(jb_connection_t connection, pid_t pid, uint32_t flags) {
     struct jb_connection *conn = (struct jb_connection *)connection;
-    kern_return_t ret = jbd_call(conn->jbd_port, JAILBREAKD_COMMAND_ENTITLE, pid);
+    kern_return_t ret = jbd_call(conn->jbd_port, JAILBREAKD_COMMAND_ENTITLE, pid, 0, 0, 0, 0, 0, 0, 0, 0);
 
+    if (ret != KERN_SUCCESS) {
+        return 1;
+    }
+    
+    return 0;
+}
+
+/* Execute code in kernel (blocking, requires connection) */
+int jb_kexecute_now(jb_connection_t connection, uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
+    struct jb_connection *conn = (struct jb_connection *)connection;
+    kern_return_t ret = jbd_call(conn->jbd_port, JAILBREAKD_COMMAND_KEXECUTE, 0, addr, x0, x1, x2, x3, x4, x5, x6);
+    
     if (ret != KERN_SUCCESS) {
         return 1;
     }
@@ -54,7 +67,7 @@ int jb_entitle_now(jb_connection_t connection, pid_t pid, uint32_t flags) {
 int jb_fix_setuid_now(jb_connection_t connection, pid_t pid) {
     if (dosuid) {
         struct jb_connection *conn = (struct jb_connection *)connection;
-        kern_return_t ret = jbd_call(conn->jbd_port, JAILBREAKD_COMMAND_FIXUP_SETUID, pid);
+        kern_return_t ret = jbd_call(conn->jbd_port, JAILBREAKD_COMMAND_FIXUP_SETUID, pid, 0, 0, 0, 0, 0, 0, 0, 0);
 
         if (ret != KERN_SUCCESS) {
             return 1;
@@ -68,6 +81,12 @@ int jb_fix_setuid_now(jb_connection_t connection, pid_t pid) {
 /* Entitle a process with the given flags (asynchronous, requires connection) */
 void jb_entitle(jb_connection_t connection, pid_t pid, uint32_t flags, jb_callback_t callback) {
     int ret = jb_entitle_now(connection, pid, flags);
+    callback(ret);
+}
+
+/* Execute code in kernel (asynchronous, requires connection) */
+void jb_kexecute(jb_connection_t connection, uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6, jb_callback_t callback) {
+    int ret = jb_kexecute_now(connection, addr, x0, x1, x2, x3, x4, x5, x6);
     callback(ret);
 }
 
@@ -95,6 +114,19 @@ int jb_oneshot_entitle_now(pid_t pid, uint32_t flags) {
     return ret;
 }
 
+/* Execute code in kernel (blocking, no connection required) */
+int jb_oneshot_kexecute_now(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6) {
+    jb_connection_t conn = jb_connect();
+    if (conn == NULL) {
+        return 1;
+    }
+    
+    int ret = jb_kexecute_now(conn, addr, x0, x1, x2, x3, x4, x5, x6);
+    jb_disconnect(conn);
+    
+    return ret;
+}
+
 /* Fix setuid on a process (blocking, no connection required) */
 int jb_oneshot_fix_setuid_now(pid_t pid) {
     if (dosuid) {
@@ -114,6 +146,12 @@ int jb_oneshot_fix_setuid_now(pid_t pid) {
 /* Entitle a process with the given flags (asynchronous, no connection required) */
 void jb_oneshot_entitle(pid_t pid, uint32_t flags, jb_callback_t callback) {
     int ret = jb_oneshot_entitle_now(pid, flags);
+    callback(ret);
+}
+
+/* Execute code in kernel (asynchronous, no connection required) */
+void jb_oneshot_kexecute(uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6, jb_callback_t callback) {
+    int ret = jb_oneshot_kexecute_now(addr, x0, x1, x2, x3, x4, x5, x6);
     callback(ret);
 }
 

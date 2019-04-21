@@ -35,16 +35,20 @@ extern void             jb_disconnect               (jb_connection_t connection)
 
 #if __BLOCKS__
 extern void             jb_entitle                  (jb_connection_t connection, pid_t pid, uint32_t flags, jb_callback_t callback);
+extern void             jb_kexecute                 (jb_connection_t connection, uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6, jb_callback_t callback);
 extern void             jb_fix_setuid               (jb_connection_t connection, pid_t pid,                 jb_callback_t callback);
 #endif
 
 extern int              jb_entitle_now              (jb_connection_t connection, pid_t pid, uint32_t flags);
+extern int              jb_kexecute_now             (jb_connection_t connection, uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6);
 extern int              jb_fix_setuid_now           (jb_connection_t connection, pid_t pid);
 
 #if __BLOCKS__
 extern void             jb_oneshot_entitle          (pid_t pid, uint32_t flags, jb_callback_t callback);
+extern void             jb_oneshot_kexecute         (uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6, jb_callback_t callback);
 extern void             jb_oneshot_fix_setuid       (pid_t pid,                 jb_callback_t callback);
 #endif
 
 extern int              jb_oneshot_entitle_now      (pid_t pid, uint32_t flags);
+extern int              jb_oneshot_kexecute_now     (uint64_t addr, uint64_t x0, uint64_t x1, uint64_t x2, uint64_t x3, uint64_t x4, uint64_t x5, uint64_t x6);
 extern int              jb_oneshot_fix_setuid_now   (pid_t pid);

@@ -100,7 +100,15 @@ kern_return_t jbd_call
 (
 	mach_port_t server_port,
 	uint8_t command,
-	uint32_t pid
+	uint32_t pid,
+	uint64_t addr,
+	uint64_t x0,
+	uint64_t x1,
+	uint64_t x2,
+	uint64_t x3,
+	uint64_t x4,
+	uint64_t x5,
+	uint64_t x6
 );
 
 __END_DECLS
@@ -130,6 +138,14 @@ __END_DECLS
 		uint8_t command;
 		char commandPad[3];
 		uint32_t pid;
+		uint64_t addr;
+		uint64_t x0;
+		uint64_t x1;
+		uint64_t x2;
+		uint64_t x3;
+		uint64_t x4;
+		uint64_t x5;
+		uint64_t x6;
 	} __Request__call_t __attribute__((unused));
 #ifdef  __MigPackStructs
 #pragma pack()
