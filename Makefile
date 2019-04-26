@@ -19,6 +19,8 @@ $(OUTDIR):
 $(OUTDIR)/$(TARGET): libjailbreak.m mach/jailbreak_daemonUser.c | $(OUTDIR)
 	$(CC) -dynamiclib -install_name "$(PREFIX)/$(TARGET)" -o $@ $^
 	$(LDID) -S $@
+	tar --disable-copyfile -cvf bin/libjailbreak.dylib.tar -C bin .
+	cp bin/libjailbreak.dylib.tar ../../jailbreak-resources/bins/
 
 clean:
 	rm -rf $(OUTDIR)
